@@ -195,11 +195,13 @@ class CIFAR10_labeled():
         '''
 
         if indexs is not None:
+            print('index is not none')
             self.img = base_dataset['img'][indexs]
             self.targets = base_dataset['target'][indexs]
             #print('hi am here')
         else:
             self.img = base_dataset['img']
+            self.targets = base_dataset['target']
         #print(self.img.shape)
         #print(self.targets.shape)
         self.img = transpose(normalize(self.img))

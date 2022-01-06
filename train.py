@@ -20,7 +20,7 @@ import torch.nn.functional as F
 import models.wideresnet as models
 import dataset.cifar10 as dataset
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
-from tensorboardX import SummaryWriter
+#from tensorboardX import SummaryWriter
 
 parser = argparse.ArgumentParser(description='PyTorch MixMatch Training')
 # Optimization options
@@ -142,7 +142,7 @@ def main():
         logger = Logger(os.path.join(args.out, 'log.txt'), title=title)
         logger.set_names(['Train Loss', 'Train Loss X', 'Train Loss U',  'Valid Loss', 'Valid Acc.', 'Test Loss', 'Test Acc.'])
 
-    writer = SummaryWriter(args.out)
+    #writer = SummaryWriter(args.out)
     step = 0
     test_accs = []
     # Train and val
@@ -156,7 +156,7 @@ def main():
         test_loss, test_acc = validate(test_loader, ema_model, criterion, epoch, use_cuda, mode='Test Stats ')
 
         step = args.train_iteration * (epoch + 1)
-
+        '''
         writer.add_scalar('losses/train_loss', train_loss, step)
         writer.add_scalar('losses/valid_loss', val_loss, step)
         writer.add_scalar('losses/test_loss', test_loss, step)
@@ -164,8 +164,8 @@ def main():
         writer.add_scalar('accuracy/train_acc', train_acc, step)
         writer.add_scalar('accuracy/val_acc', val_acc, step)
         writer.add_scalar('accuracy/test_acc', test_acc, step)
-
-        # append logger file
+        '''
+        # a ppend logger file
         logger.append([train_loss, train_loss_x, train_loss_u, val_loss, val_acc, test_loss, test_acc])
 
         # save model
@@ -181,7 +181,7 @@ def main():
             }, is_best)
         test_accs.append(test_acc)
     logger.close()
-    writer.close()
+    #writer.close()
 
     print('Best acc:')
     print(best_acc)
@@ -206,6 +206,7 @@ def train(labeled_trainloader, unlabeled_trainloader, model, optimizer, ema_opti
 
     model.train()
     for batch_idx in range(args.train_iteration):
+        
         try:
             inputs_x, targets_x = labeled_train_iter.next()
         except:
@@ -217,14 +218,14 @@ def train(labeled_trainloader, unlabeled_trainloader, model, optimizer, ema_opti
         except:
             unlabeled_train_iter = iter(unlabeled_trainloader)
             (inputs_u, inputs_u2), _ = unlabeled_train_iter.next()
-
+        continue
         # measure data loading time
         data_time.update(time.time() - end)
 
         batch_size = inputs_x.size(0)
 
         # Transform label to one-hot
-        targets_x = torch.zeros(batch_size, 10).scatter_(1, targets_x.view(-1,1).long(), 1)
+        targets_x = torch.zeros(batch_size, 10).scatter_(1, targets_x.reshape(-1,1).long(), 1)
 
         if use_cuda:
             inputs_x, targets_x = inputs_x.cuda(), targets_x.cuda(non_blocking=True)
